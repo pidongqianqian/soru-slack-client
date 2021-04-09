@@ -12,10 +12,11 @@ limitations under the License.
 */
 
 import { Client } from "./client";
-import { IconBase, IIconData } from "./base";
+import {IconBase, ICreatorValue, IIconData} from "./base";
 import { IChannelData, Channel } from "./channel";
 import { IUserData, User } from "./user";
 import { Bot } from "./bot";
+import {WebAPICallResult} from "@slack/web-api";
 
 export interface ITeamData {
 	id: string;
@@ -132,5 +133,45 @@ export class Team extends IconBase {
 	public isBotToken(): boolean {
 		const token = this.client.tokens.get(this.id) || "";
 		return token.startsWith("xoxb");
+	}
+
+
+	public async create(name: string, isPrivate:boolean): Promise<string> {
+		const result =  await this.client.web(this.id).conversations.create({
+			name: name,
+			is_private: isPrivate,
+			team_id: this.id
+		});
+		if (result.channel) {
+			const channelData: IChannelData = {
+				id: (<IChannelData>result.channel).id,
+				name: name,
+				is_channel: (<IChannelData>result.channel).is_channel,
+				is_group: (<IChannelData>result.channel).is_group,
+				is_mpim: (<IChannelData>result.channel).is_mpim,
+				is_im: (<IChannelData>result.channel).is_im,
+				is_private: (<IChannelData>result.channel).is_private,
+				team_id: this.id,
+			}
+			this.client.addChannel(<IChannelData>channelData);
+			return (<IChannelData>result.channel).id;
+		} else {
+			return '';
+		}
+		
+	}
+
+	/**
+	 * Invites users to a channel.
+	 * @param channel {string} Required. The ID of the public or private channel to invite user(s) to.
+	 * Example C1234567890
+	 * @param users {string} Required. A comma separated list of user IDs. Up to 1000 users may be listed.
+	 * Example W1234567890,U2345678901,U3456789012
+	 */
+	public async invite(channel: string, users:string) {
+		await this.client.web(this.id).conversations.invite({
+			channel: channel,
+			users: users,
+		});
 	}
 }

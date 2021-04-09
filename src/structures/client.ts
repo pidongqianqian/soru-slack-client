@@ -733,7 +733,24 @@ export class Client extends EventEmitter {
 		}
 	}
 
+
+	public createConversations(data: IChannelData, type = true) {
+		log.verbose("createConversations data: ", data);
+		const teamId = data.team_id || (data.shared_team_ids && data.shared_team_ids[0]);
+		if (!teamId) {
+			log.verbose("createConversations teamId: ", teamId);
+			return;
+		}
+		const team = this.teams.get(teamId);
+		log.verbose("createConversations team: ", team);
+		if (team) {
+			const conv = team.create("test1231", true);
+		}
+	}
+	
 	public getChannel(channelId: string, teamId?: string): Channel | null {
+		log.verbose("90000201", channelId);
+		log.verbose("90000212", teamId);
 		if (!teamId) {
 			[teamId, channelId] = channelId.split(this.separator);
 		}
