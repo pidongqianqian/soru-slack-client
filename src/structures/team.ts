@@ -168,10 +168,11 @@ export class Team extends IconBase {
 	 * @param users {string} Required. A comma separated list of user IDs. Up to 1000 users may be listed.
 	 * Example W1234567890,U2345678901,U3456789012
 	 */
-	public async invite(channel: string, users:string) {
-		await this.client.web(this.id).conversations.invite({
+	public async invite(channel: string, users:string): Promise<any> {
+		const result = await this.client.web(this.id).conversations.invite({
 			channel: channel,
 			users: users,
 		});
+		return result.ok;
 	}
 }
