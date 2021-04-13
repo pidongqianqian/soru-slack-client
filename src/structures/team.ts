@@ -175,4 +175,19 @@ export class Team extends IconBase {
 		});
 		return result.ok;
 	}
+
+	/**
+	 * kick user from a channel.
+	 * @param channel {string} Required. ID of conversation to remove user from.
+	 * Example C1234567890
+	 * @param user {string} Required. User ID to be removed..
+	 * Example W1234567890
+	 */
+	public async kick(channel: string, user: string): Promise<any> {
+		const result = await this.client.web(this.id).conversations.kick({
+			channel: channel,
+			user: user,
+		});
+		return result.ok;
+	}
 }
