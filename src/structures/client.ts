@@ -388,10 +388,15 @@ export class Client extends EventEmitter {
 					}
 				});
 
-				rtm.on("member_joined_channel", (data) => {
-					log.debug("RTM event: member_joined_channel");
+				rtm.on("member_joined_channel", async (data) => {
+					log.verbose("RTM event: member_joined_channel");
 					const userObj = this.getUser(data.user, teamId);
-					const chanObj = this.getChannel(data.channel, teamId);
+					let chanObj = this.getChannel(data.channel, teamId);
+					if (!chanObj) {
+						const teamObj = this.getTeam(teamId);
+						await teamObj?.load();
+						chanObj = this.getChannel(data.channel, teamId);
+					}
 					if (userObj && chanObj) {
 						chanObj.members.set(userObj.id, userObj);
 						this.emit("memberJoinedChannel", userObj, chanObj);
@@ -399,7 +404,7 @@ export class Client extends EventEmitter {
 				});
 
 				rtm.on("member_left_channel", (data) => {
-					log.debug("RTM event: member_left_channel");
+					log.verbose("RTM event: member_left_channel");
 					const userObj = this.getUser(data.user, teamId);
 					const chanObj = this.getChannel(data.channel, teamId);
 					if (userObj && chanObj) {
@@ -541,13 +546,18 @@ export class Client extends EventEmitter {
 			});
 		});
 
-		this.events.on("member_joined_channel", (data, evt) => {
+		this.events.on("member_joined_channel", async (data, evt) => {
 			if (evt.api_app_id !== appId) {
 				return;
 			}
-			log.debug("Events event: member_joined_channel");
+			log.verbose("Events event: member_joined_channel");
 			const userObj = this.getUser(data.user, evt.team_id);
-			const chanObj = this.getChannel(data.channel, evt.team_id);
+			let chanObj = this.getChannel(data.channel, evt.team_id);
+			if (!chanObj) {
+				const teamObj = this.getTeam(evt.team_id);
+				await teamObj?.load();
+				chanObj = this.getChannel(data.channel, evt.team_id);
+			}
 			if (userObj && chanObj) {
 				chanObj.members.set(userObj.id, userObj);
 				this.emit("memberJoinedChannel", userObj, chanObj);
@@ -558,7 +568,7 @@ export class Client extends EventEmitter {
 			if (evt.api_app_id !== appId) {
 				return;
 			}
-			log.debug("Events event: member_left_channel");
+			log.verbose("Events event: member_left_channel");
 			const userObj = this.getUser(data.user, evt.team_id);
 			const chanObj = this.getChannel(data.channel, evt.team_id);
 			if (userObj && chanObj) {
