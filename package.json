@@ -1,5 +1,5 @@
 {
-  "name": "soru-slack-client",
+  "name": "@pidong/soru-slack-client",
   "version": "0.1.2",
   "description": "A slack client",
   "repository": {
