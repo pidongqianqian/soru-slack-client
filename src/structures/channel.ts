@@ -26,10 +26,12 @@ export interface IChannelData {
 	is_group: boolean;
 	is_mpim: boolean;
 	is_im: boolean;
+	is_archived?: boolean;
 	topic?: ICreatorValue;
 	purpose?: ICreatorValue;
 	private?: boolean;
 	is_private?: boolean;
+	is_open?: boolean;
 	team_id?: string;
 	shared_team_ids?: string[];
 	user?: string;
@@ -61,6 +63,8 @@ export class Channel extends Base {
 	public team: Team;
 	public partial = true;
 	private joined = false;
+	private isArchived = false;
+	private isOpen = false;
 	constructor(client: Client, data: IChannelData) {
 		super(client);
 		const teamId = data.team_id || (data.shared_team_ids && data.shared_team_ids[0]);
@@ -100,6 +104,12 @@ export class Channel extends Base {
 			this.purpose = data.purpose!.value;
 		}
 		this.private = Boolean(data.is_im || data.private || data.is_private);
+		if (data.is_archived !== undefined && data.is_archived !== null) {
+			this.isArchived = data.is_archived;
+		}
+		if (data.is_open !== undefined && data.is_open !== null) {
+			this.isOpen = data.is_open;
+		}
 		if (data.hasOwnProperty("user")) {
 			const userObj = this.team.users.get(data.user!);
 			if (userObj) {

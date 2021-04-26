@@ -99,6 +99,7 @@ export class Team extends IconBase {
 					types: "public_channel,private_channel,mpim,im",
 					limit: 1000,
 					cursor,
+					exclude_archived: true
 				});
 				if (!ret || !ret.ok || !ret.channels) {
 					throw new Error("Bad response");
