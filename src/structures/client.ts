@@ -441,7 +441,7 @@ export class Client extends EventEmitter {
 			const data = await (new WebClient()).oauth.v2.access({
 				client_id: this.opts.events!.clientId,
 				client_secret: this.opts.events!.clientSecret,
-				code: req.query.code,
+				code: <string>req.query.code,
 			});
 			if (data.app_id !== appId) {
 				log.silly("Not for our app, ignoring...");
@@ -507,6 +507,15 @@ export class Client extends EventEmitter {
 		}
 
 		this.events.on("message", async (data, evt) => {
+			if (evt.api_app_id !== appId) {
+				return;
+			}
+			log.debug("Events event: message");
+			data.team_id = evt.team_id;
+			await this.handleMessageEvent(data);
+		});
+
+		this.events.on("message.im", async (data, evt) => {
 			if (evt.api_app_id !== appId) {
 				return;
 			}
