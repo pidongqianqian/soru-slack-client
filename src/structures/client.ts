@@ -388,6 +388,31 @@ export class Client extends EventEmitter {
 					}
 				});
 
+				rtm.on("channel_joined", async (data) => {
+					log.verbose("RTM event: channel_joined",data);
+					const userObj = this.getUser(data.actor_id, teamId);
+					let chanObj = this.getChannel(data.channel, teamId);
+					if (!chanObj) {
+						const teamObj = this.getTeam(teamId);
+						await teamObj?.load();
+						chanObj = this.getChannel(data.channel, teamId);
+					}
+					if (userObj && chanObj) {
+						chanObj.members.set(userObj.id, userObj);
+						this.emit("channelJoined", userObj, chanObj);
+					}
+				});
+
+				rtm.on("channel_left", (data) => {
+					log.verbose("RTM event: channel_left", data);
+					const userObj = this.getUser(data.actor_id, teamId);
+					const chanObj = this.getChannel(data.channel, teamId);
+					if (userObj && chanObj) {
+						chanObj.members.delete(userObj.id);
+						this.emit("channelLeft", userObj, chanObj);
+					}
+				});
+
 				rtm.on("member_joined_channel", async (data) => {
 					log.verbose("RTM event: member_joined_channel");
 					const userObj = this.getUser(data.user, teamId);

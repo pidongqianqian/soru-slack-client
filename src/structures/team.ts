@@ -191,4 +191,16 @@ export class Team extends IconBase {
 		});
 		return result.ok;
 	}
+
+	/**
+	 * leave a conversation.
+	 * @param channel {string} Required. ID of conversation to leave.
+	 * Example C1234567890
+	 */
+	public async leave(channel: string): Promise<any> {
+		const result = await this.client.web(this.id).conversations.leave({
+			channel: channel,
+		});
+		return result.ok;
+	}
 }
