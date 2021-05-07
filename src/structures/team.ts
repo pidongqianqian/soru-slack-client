@@ -198,9 +198,19 @@ export class Team extends IconBase {
 	 * Example C1234567890
 	 */
 	public async leave(channel: string): Promise<any> {
-		const result = await this.client.web(this.id).conversations.leave({
+		return await this.client.web(this.id).conversations.leave({
 			channel: channel,
 		});
-		return result.ok;
+	}
+
+	/**
+	 * archive a conversation.
+	 * @param channel {string} Required. ID of conversation to archive.
+	 * Example C1234567890
+	 */
+	public async archive(channel: string): Promise<any> {
+		return await this.client.web(this.id).conversations.archive({
+			channel: channel,
+		});
 	}
 }
