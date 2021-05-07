@@ -947,19 +947,23 @@ export class Client extends EventEmitter {
 			return;
 		}
 		log.silly("Processing message with data", data);
-		const { channel, author } = await this.getChannelAndAuthor(data);
-		if (data.subtype === "message_changed") {
-			// we do an edit
-			const oldMessage = new Message(this, data.previous_message, channel, author);
-			const newMessage = new Message(this, data.message, channel, author);
-			this.emit("messageChanged", oldMessage, newMessage);
-		} else if (data.subtype === "message_deleted") {
-			// we do a message deletion
-			const oldMessage = new Message(this, data.previous_message, channel, author);
-			this.emit("messageDeleted", oldMessage);
-		} else {
-			const message = new Message(this, data, channel, author);
-			this.emit("message", message);
+		try {
+			const { channel, author } = await this.getChannelAndAuthor(data);
+			if (data.subtype === "message_changed") {
+				// we do an edit
+				const oldMessage = new Message(this, data.previous_message, channel, author);
+				const newMessage = new Message(this, data.message, channel, author);
+				this.emit("messageChanged", oldMessage, newMessage);
+			} else if (data.subtype === "message_deleted") {
+				// we do a message deletion
+				const oldMessage = new Message(this, data.previous_message, channel, author);
+				this.emit("messageDeleted", oldMessage);
+			} else {
+				const message = new Message(this, data, channel, author);
+				this.emit("message", message);
+			}
+		} catch (e) {
+			log.warn("getChannelAndAuthor err", e);
 		}
 	}
 
