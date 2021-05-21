@@ -213,4 +213,17 @@ export class Team extends IconBase {
 			channel: channel,
 		});
 	}
+
+	/**
+	 * rename a conversation.
+	 * @param channel {string} Required. ID of conversation.
+	 * @param name {string} Required.
+	 * Example C1234567890, newName
+	 */
+	public async rename(channel: string, name: string): Promise<any> {
+		return await this.client.web(this.id).conversations.rename({
+			channel: channel,
+			name,
+		});
+	}
 }
