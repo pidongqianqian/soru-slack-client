@@ -32,9 +32,11 @@ export interface IChannelData {
 	private?: boolean;
 	is_private?: boolean;
 	is_open?: boolean;
+	is_member?: boolean;
 	team_id?: string;
 	shared_team_ids?: string[];
 	user?: string;
+	num_members?: number;
 }
 
 interface ISendMessage {
@@ -63,8 +65,10 @@ export class Channel extends Base {
 	public team: Team;
 	public partial = true;
 	private joined = false;
-	private isArchived = false;
-	private isOpen = false;
+	public isArchived = false;
+	public isOpen = false;
+	public isMember = false;
+	public numMembers = 0;
 	constructor(client: Client, data: IChannelData) {
 		super(client);
 		const teamId = data.team_id || (data.shared_team_ids && data.shared_team_ids[0]);
@@ -110,6 +114,13 @@ export class Channel extends Base {
 		if (data.is_open !== undefined && data.is_open !== null) {
 			this.isOpen = data.is_open;
 		}
+		if (data.is_member !== undefined && data.is_member !== null) {
+			this.isMember = data.is_member;
+		}
+		if (data.num_members) {
+			this.numMembers = data.num_members;
+		}
+
 		if (data.hasOwnProperty("user")) {
 			const userObj = this.team.users.get(data.user!);
 			if (userObj) {

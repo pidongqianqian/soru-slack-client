@@ -191,4 +191,39 @@ export class Team extends IconBase {
 		});
 		return result.ok;
 	}
+
+	/**
+	 * leave a conversation.
+	 * @param channel {string} Required. ID of conversation to leave.
+	 * Example C1234567890
+	 */
+	public async leave(channel: string): Promise<any> {
+		return await this.client.web(this.id).conversations.leave({
+			channel: channel,
+		});
+	}
+
+	/**
+	 * archive a conversation.
+	 * @param channel {string} Required. ID of conversation to archive.
+	 * Example C1234567890
+	 */
+	public async archive(channel: string): Promise<any> {
+		return await this.client.web(this.id).conversations.archive({
+			channel: channel,
+		});
+	}
+
+	/**
+	 * rename a conversation.
+	 * @param channel {string} Required. ID of conversation.
+	 * @param name {string} Required.
+	 * Example C1234567890, newName
+	 */
+	public async rename(channel: string, name: string): Promise<any> {
+		return await this.client.web(this.id).conversations.rename({
+			channel: channel,
+			name,
+		});
+	}
 }

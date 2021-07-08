@@ -388,6 +388,31 @@ export class Client extends EventEmitter {
 					}
 				});
 
+				rtm.on("channel_joined", async (data) => {
+					log.verbose("RTM event: channel_joined",data);
+					const userObj = this.getUser(data.actor_id, teamId);
+					let chanObj = this.getChannel(data.channel, teamId);
+					if (!chanObj) {
+						const teamObj = this.getTeam(teamId);
+						await teamObj?.load();
+						chanObj = this.getChannel(data.channel, teamId);
+					}
+					if (userObj && chanObj) {
+						chanObj.members.set(userObj.id, userObj);
+						this.emit("channelJoined", userObj, chanObj);
+					}
+				});
+
+				rtm.on("channel_left", (data) => {
+					log.verbose("RTM event: channel_left", data);
+					const userObj = this.getUser(data.actor_id, teamId);
+					const chanObj = this.getChannel(data.channel, teamId);
+					if (userObj && chanObj) {
+						chanObj.members.delete(userObj.id);
+						this.emit("channelLeft", userObj, chanObj);
+					}
+				});
+
 				rtm.on("member_joined_channel", async (data) => {
 					log.verbose("RTM event: member_joined_channel");
 					const userObj = this.getUser(data.user, teamId);
@@ -441,7 +466,7 @@ export class Client extends EventEmitter {
 			const data = await (new WebClient()).oauth.v2.access({
 				client_id: this.opts.events!.clientId,
 				client_secret: this.opts.events!.clientSecret,
-				code: req.query.code,
+				code: <string>req.query.code,
 			});
 			if (data.app_id !== appId) {
 				log.silly("Not for our app, ignoring...");
@@ -507,6 +532,15 @@ export class Client extends EventEmitter {
 		}
 
 		this.events.on("message", async (data, evt) => {
+			if (evt.api_app_id !== appId) {
+				return;
+			}
+			log.debug("Events event: message");
+			data.team_id = evt.team_id;
+			await this.handleMessageEvent(data);
+		});
+
+		this.events.on("message.im", async (data, evt) => {
 			if (evt.api_app_id !== appId) {
 				return;
 			}
@@ -913,19 +947,23 @@ export class Client extends EventEmitter {
 			return;
 		}
 		log.silly("Processing message with data", data);
-		const { channel, author } = await this.getChannelAndAuthor(data);
-		if (data.subtype === "message_changed") {
-			// we do an edit
-			const oldMessage = new Message(this, data.previous_message, channel, author);
-			const newMessage = new Message(this, data.message, channel, author);
-			this.emit("messageChanged", oldMessage, newMessage);
-		} else if (data.subtype === "message_deleted") {
-			// we do a message deletion
-			const oldMessage = new Message(this, data.previous_message, channel, author);
-			this.emit("messageDeleted", oldMessage);
-		} else {
-			const message = new Message(this, data, channel, author);
-			this.emit("message", message);
+		try {
+			const { channel, author } = await this.getChannelAndAuthor(data);
+			if (data.subtype === "message_changed") {
+				// we do an edit
+				const oldMessage = new Message(this, data.previous_message, channel, author);
+				const newMessage = new Message(this, data.message, channel, author);
+				this.emit("messageChanged", oldMessage, newMessage);
+			} else if (data.subtype === "message_deleted") {
+				// we do a message deletion
+				const oldMessage = new Message(this, data.previous_message, channel, author);
+				this.emit("messageDeleted", oldMessage);
+			} else {
+				const message = new Message(this, data, channel, author);
+				this.emit("message", message);
+			}
+		} catch (e) {
+			log.warn("getChannelAndAuthor err", e);
 		}
 	}
 
