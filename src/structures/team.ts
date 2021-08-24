@@ -159,7 +159,7 @@ export class Team extends IconBase {
 		} else {
 			return '';
 		}
-		
+
 	}
 
 	/**
@@ -224,6 +224,19 @@ export class Team extends IconBase {
 		return await this.client.web(this.id).conversations.rename({
 			channel: channel,
 			name,
+		});
+	}
+
+	/**
+	 * set topic.
+	 * @param channel {string} Required. ID of conversation.
+	 * @param topic {string} Required.
+	 * Example C1234567890, newName
+	 */
+	public async setTopic(channel: string, topic: string): Promise<any> {
+		return await this.client.web(this.id).conversations.setTopic({
+			channel: channel,
+			topic,
 		});
 	}
 }
