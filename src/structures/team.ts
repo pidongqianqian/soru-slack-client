@@ -239,4 +239,25 @@ export class Team extends IconBase {
 			topic,
 		});
 	}
+
+	/**
+	 * pin an item to a channel.
+	 * @param channel {string} Required. ID of conversation.
+	 * @param timestamp {string} Optional. it is required when pinning messages.
+	 * @param type
+	 * Example C1234567890, 1234567890.123456. 'add'
+	 */
+	public async pinItemToChannel(channel: string, timestamp: string, type = 'add'): Promise<any> {
+		if (type === 'add') {
+			return await this.client.web(this.id).pins.add({
+				channel: channel,
+				timestamp
+			});
+		} else {
+			return await this.client.web(this.id).pins.remove({
+				channel: channel,
+				timestamp
+			});
+		}
+	}
 }
